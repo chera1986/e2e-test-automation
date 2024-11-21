@@ -8,7 +8,3 @@ A Cypress project for practicing E2E test automation. This project includes test
 2. Install dependencies: `npm install`
 3. Run Cypress: `npm run test`
 
-## Tested Features
-- Homepage navigation
-- Product search
-- Adding a product to the cart
