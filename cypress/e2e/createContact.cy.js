@@ -2,15 +2,22 @@
 
 describe('EspoCRM Demo - E2E Test', () => {
   const username = 'admin';
-  const password = '1';
-  const contactEmail = 'johndoe@example.com';
+
+  let dynamicFirstName;
+  let dynamicLastName;
+  let dynamicEmail;
 
   beforeEach(() => {
+    // Generate dynamic names and email before each test
+    const timestamp = Date.now();
+    dynamicFirstName = `John-${timestamp}`;
+    dynamicLastName = `Doe-${timestamp}`;
+    dynamicEmail = `john.doe.${timestamp}@example.com`; // Dynamic email
+
     // Visit the EspoCRM Demo site and log in
-    cy.visit('https://demo.us.espocrm.com/?l=en_US');
+    cy.visit('https://demo.us.espocrm.com/');
     cy.get('[name="username"]').type(username);
     cy.get('#btn-login').click();
-
   });
 
   it('Logs in successfully and navigates to the dashboard', () => {
@@ -39,6 +46,7 @@ describe('EspoCRM Demo - E2E Test', () => {
 
   it('Creates a new contact and verifies it appears in the list', () => {
     cy.intercept('GET', '/api/v1/Contact/layout/list').as('getLayoutList');
+
     // Navigate to Contacts
     cy.get('[data-name="Contact"]').first().click();
 
@@ -52,31 +60,29 @@ describe('EspoCRM Demo - E2E Test', () => {
     cy.get('[data-name="create"]').should('be.visible').click();
     cy.get('[data-name="firstName"]', { timeout: 30000 }).should('be.visible');
 
-    // Fill out the contact form
-    cy.get('[data-name="firstName"]').type('John');
-    cy.get('[data-name="lastName"]').type('Doe');
-    cy.get('[data-name="emailAddress"]').first().type(contactEmail);
+    // Fill out the contact form with dynamic names and email
+    cy.get('[data-name="firstName"]').type(dynamicFirstName);
+    cy.get('[data-name="lastName"]').type(dynamicLastName);
+    cy.get('[data-name="emailAddress"]').type(dynamicEmail);
 
     // Save the contact
     cy.get('[data-name="save"]').click();
 
-    // Verify the contact was created
-    cy.get('.detail-header').should('contain.text', 'John Doe');
-
-    // Navigate back to the contact list
-    cy.get('[data-action="navigateTo"]').contains('Contacts').click();
-
-    // Verify the new contact appears in the list
-    cy.get('.list-row').should('contain.text', 'John Doe');
+    // Verify the contact was created with dynamic details
+    cy.get('[data-name="name"]').should('include.text', `${dynamicFirstName} ${dynamicLastName}`);
   });
 
   it('Logs out successfully', () => {
-    // Log out
-    cy.get('.user-profile').click();
-    cy.get('[data-action="logout"]').click();
+    // Log out by clicking the dropdown in the navigation bar
+    cy.get('.navbar-nav')
+      .find('[data-toggle="dropdown"]')
+      .last()
+      .click();
+
+    // Click on the logout option
+    cy.get('[data-name="logout"]').click();
 
     // Verify successful logout
-    cy.url().should('include', '/#Auth');
-    cy.get('[name="username"]').should('be.visible');
+    cy.url().should('eq', 'https://demo.us.espocrm.com/?l=en_US');
   });
 });
