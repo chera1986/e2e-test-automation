@@ -1,3 +1,5 @@
+//npm run test
+
 describe('EspoCRM Demo - E2E Test', () => {
   const username = 'admin';
   const password = '1';
