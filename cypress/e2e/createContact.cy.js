@@ -7,17 +7,15 @@ describe('EspoCRM Demo - E2E Test', () => {
   let dynamicLastName;
   let dynamicEmail;
 
-  beforeEach(() => {
-    // Generate dynamic names and email before each test
-    const timestamp = Date.now();
-    dynamicFirstName = `John-${timestamp}`;
-    dynamicLastName = `Doe-${timestamp}`;
-    dynamicEmail = `john.doe.${timestamp}@example.com`; // Dynamic email
+   // Generate dynamic names and email
+   const timestamp = Date.now();
+   dynamicFirstName = `John-${timestamp}`;
+   dynamicLastName = `Doe-${timestamp}`;
+   dynamicEmail = `john.doe.${timestamp}@example.com`; // Dynamic email
 
+  beforeEach(() => {
     // Visit the EspoCRM Demo site and log in
-    cy.visit('https://demo.us.espocrm.com/');
-    cy.get('[name="username"]').type(username);
-    cy.get('#btn-login').click();
+    cy.loginToEspoCRM(username)
   });
 
   it('Logs in successfully and navigates to the dashboard', () => {
@@ -63,7 +61,7 @@ describe('EspoCRM Demo - E2E Test', () => {
     // Fill out the contact form with dynamic names and email
     cy.get('[data-name="firstName"]').type(dynamicFirstName);
     cy.get('[data-name="lastName"]').type(dynamicLastName);
-    cy.get('[data-name="emailAddress"]').type(dynamicEmail);
+    cy.get('[data-name="emailAddress"]').first().type(dynamicEmail);
 
     // Save the contact
     cy.get('[data-name="save"]').click();
