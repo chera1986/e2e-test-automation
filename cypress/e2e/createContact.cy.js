@@ -1,4 +1,4 @@
-//npm run test
+// npm run test
 
 describe('EspoCRM Demo - E2E Test', () => {
   const username = 'admin';
@@ -10,6 +10,7 @@ describe('EspoCRM Demo - E2E Test', () => {
     cy.visit('https://demo.us.espocrm.com/?l=en_US');
     cy.get('[name="username"]').type(username);
     cy.get('#btn-login').click();
+
   });
 
   it('Logs in successfully and navigates to the dashboard', () => {
@@ -37,16 +38,24 @@ describe('EspoCRM Demo - E2E Test', () => {
   });
 
   it('Creates a new contact and verifies it appears in the list', () => {
+    cy.intercept('GET', '/api/v1/Contact/layout/list').as('getLayoutList');
     // Navigate to Contacts
     cy.get('[data-name="Contact"]').first().click();
+
+    // Wait for the layout API response to ensure Contacts page readiness
+    cy.wait('@getLayoutList').then((interception) => {
+      expect(interception.response.statusCode).to.eq(200);
+      expect(interception.response.body).to.be.an('array').that.is.not.empty;
+    });
+
     cy.url().should('include', '#Contact');
-    cy.get('[data-name="create"]', { timeout: 10000 }).should('be.visible');
-    cy.get('[data-name="create"]').click();
+    cy.get('[data-name="create"]').should('be.visible').click();
+    cy.get('[data-name="firstName"]', { timeout: 30000 }).should('be.visible');
 
     // Fill out the contact form
     cy.get('[data-name="firstName"]').type('John');
     cy.get('[data-name="lastName"]').type('Doe');
-    cy.get('[data-name="emailAddress"]').type(contactEmail);
+    cy.get('[data-name="emailAddress"]').first().type(contactEmail);
 
     // Save the contact
     cy.get('[data-name="save"]').click();
